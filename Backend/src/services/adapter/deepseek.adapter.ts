@@ -1,9 +1,9 @@
 import OpenAI from "openai";
-import { AIModelAdapter, AIResponse } from "../../types/ai";
-import { Message } from "../../types/chat";
-import { Artifact } from "../../types/artifact";
-import { GET_SYSTEM_PROMPT } from "../../prompts/system";
-import { ArtifactService } from "../artifact.service";
+import { AIModelAdapter, AIResponse } from "../../types/ai.js";
+import { Message } from "../../types/chat.js";
+import { Artifact } from "../../types/artifact.js";
+import { GET_SYSTEM_PROMPT } from "../../prompts/system.js";
+import { ArtifactService } from "../artifact.service.js";
 
 export class DeepSeekAdapter implements AIModelAdapter {
   public id: string;
@@ -22,7 +22,11 @@ export class DeepSeekAdapter implements AIModelAdapter {
   ): Promise<AIResponse> {
     const client = new OpenAI({
       apiKey: apiKey,
-      baseURL: "https://api.deepseek.com",
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultHeaders: {
+        "HTTP-Referer": "*",
+        "X-Title": "My AI App",
+      }
     });
 
     const apiMessages: any[] = [

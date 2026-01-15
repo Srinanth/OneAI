@@ -1,6 +1,6 @@
-import { AIModelAdapter } from "../types/ai";
-import { GeminiAdapter } from "./adapter/gemini.adapter";
-import { DeepSeekAdapter } from "./adapter/deepseek.adapter";
+import { AIModelAdapter } from "../types/ai.js";
+import { GeminiAdapter } from "./adapter/gemini.adapter.js";
+import { DeepSeekAdapter } from "./adapter/deepseek.adapter.js";
 
 export class AIFactory {
   /**

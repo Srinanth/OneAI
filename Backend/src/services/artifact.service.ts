@@ -1,4 +1,4 @@
-import { Artifact } from '../types/artifact';
+import { Artifact } from '../types/artifact.js';
 
 export class ArtifactService {
   private static STARTING = '---ARTIFACT_START---';

@@ -1,9 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
-import { AIModelAdapter, AIResponse } from "../../types/ai";
-import { Message } from "../../types/chat";
+import { AIModelAdapter, AIResponse } from "../../types/ai.js";
+import { Message } from "../../types/chat.js";
 import { Artifact } from "../../types/artifact";
-import { GET_SYSTEM_PROMPT } from "../../prompts/system";
-import { ArtifactService } from "../artifact.service";
+import { GET_SYSTEM_PROMPT } from "../../prompts/system.js";
+import { ArtifactService } from "../artifact.service.js";
 
 export class GeminiAdapter implements AIModelAdapter {
   public id: string;

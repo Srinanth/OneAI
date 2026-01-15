@@ -1,0 +1,18 @@
+{
+  "modelId": "deepseek/deepseek-chat",
+  "apiKey": "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",
+  "message": "Okay, that looks good. Now add a decision to use PostgreSQL as the database.",
+  "currentArtifact": {
+    "version": 1,
+    "summary": "...",
+    "facts": ["..."],
+    "decisions": [],
+    "open_questions": [],
+    "assumptions": [],
+    "last_updated": "..."
+  },
+  "history": [
+    { "role": "user", "content": "Plan a backend for a todo app. Use Node.js." },
+    { "role": "assistant", "content": "..." }
+  ]
+}

@@ -1,0 +1,7 @@
+  {
+    "modelId": "gemini-2.5-flash",
+    "apiKey": "AIzaSyAD-iQ8B-vyQ6v73tUnShrg8Oe6Zc39Fws",
+    "message": "Plan a backend for a todo app. Use Node.js.",
+    "currentArtifact": null, 
+    "history": []
+  }
