@@ -1,78 +1,58 @@
 import { Request, Response } from 'express';
-import { AIFactory } from '../services/manager.js';
-import { createInitialArtifact } from '../types/artifact.js';
-
-
-
-// test controller, ill do it later with db
-
-
-
-
-
+import { ChatService } from '../services/chat.service.js';
 
 export class ChatController {
 
   static async startChat(req: Request, res: Response) {
-    res.json({
-      success: true,
-      data: {
-        chatId: 'test-session',
-        modelId: req.body.modelId || 'gemini-1.5-flash',
-        artifact: createInitialArtifact()
+    try {
+      const { modelId, title, userId } = req.body;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized: Missing userId' });
       }
-    });
+
+      const chat = await ChatService.startSession(userId, modelId, title);
+
+      res.status(201).json({ success: true, data: chat });
+    } catch (error: any) {
+      console.error('Start Chat Error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
   }
 
-  static async sendMessage(req: Request, res: Response) {
+static async sendMessage(req: Request, res: Response) {
     try {
-      const { 
-        message, 
-        apiKey, 
-        modelId,
-        history, 
-        currentArtifact 
-      } = req.body; 
+      const { chatId } = req.params;
+      const { message, apiKey, modelId, userId } = req.body;
 
-      if (!message || !apiKey) {
-        return res.status(400).json({ error: 'Message and API Key are required' });
+      if (!chatId || typeof chatId !== 'string') {
+        return res.status(400).json({ success: false, error: 'Invalid Chat ID' });
       }
 
-     const previousMessages = history || [];
+      if (!userId) return res.status(401).json({ success: false, error: 'Unauthorized' });
+      if (!message) return res.status(400).json({ success: false, error: 'Message is required' });
+      if (!apiKey) return res.status(400).json({ success: false, error: 'API Key is required' });
 
-      // 2. ADD the new user message to the end
-      const fullConversation = [
-        ...previousMessages,
-        { role: 'user', content: message }
-      ];
-
-      // 3. Setup Artifact
-      const artifact = currentArtifact || createInitialArtifact();
-      const activeModelId = modelId || 'gemini-1.5-flash';
-
-      // 4. RUN AI (Send the FULL conversation)
-      const adapter = AIFactory.createAdapter(activeModelId);
-      const aiResponse = await adapter.sendMessage(
-        fullConversation, // <--- Passing the combined list
-        artifact, 
-        apiKey
+      const result = await ChatService.processMessage(
+        userId, 
+        chatId, 
+        message, 
+        apiKey, 
+        modelId
       );
-      // 3. RETURN EVERYTHING (So you can chain it in the next request)
+
       res.json({
         success: true,
         data: {
-          response: aiResponse.text,
-          artifact: aiResponse.artifact,
-          history: [
-            ...fullConversation, // Return the full history including AI reply
-            { role: 'assistant', content: aiResponse.text }
-          ]
+          response: result.text,
+          artifact: result.artifact
         }
       });
 
     } catch (error: any) {
-      console.error('Chat Error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      console.error('Message Error:', error);
+      const status = error.message.includes('not found') ? 404 : 500;
+      res.status(status).json({ success: false, error: error.message });
     }
   }
 }
