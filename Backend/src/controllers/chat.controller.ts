@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import { ChatService } from '../services/chat.service.js';
+import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export class ChatController {
 
-  static async startChat(req: Request, res: Response) {
+  static async startChat(req: AuthenticatedRequest, res: Response) {
     try {
-      const { modelId, title, userId } = req.body;
-
+      const userId = req.user?.id;
+      const { modelId, title } = req.body;
+      
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized: Missing userId' });
       }
