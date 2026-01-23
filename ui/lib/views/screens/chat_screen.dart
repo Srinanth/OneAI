@@ -1,0 +1,2 @@
+// The core interface of the app, designed to mimic ChatGPT/Gemini. It displays the active conversation in the center and features a 'ModelSelector' in the message bar to switch LLMs instantly.
+// It also includes a Side Menu (Drawer) to access the history of previous chats.

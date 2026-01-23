@@ -1,0 +1,2 @@
+// Data model representing a single chat bubble,
+// holding the message ID, role (user/assistant), textual content, and timestamp, along with a factory method to parse the JSON response from the Supabase 'messages' table.

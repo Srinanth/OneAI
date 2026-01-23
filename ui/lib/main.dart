@@ -1,0 +1,2 @@
+// Entry point of the application. Initializes Flutter bindings, sets up the Riverpod ProviderScope,
+// initializes the StorageService (SharedPrefs) to load saved keys/theme, and defines the root MaterialApp with the default Theme and Home route.

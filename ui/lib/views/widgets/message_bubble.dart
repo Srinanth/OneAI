@@ -1,0 +1,1 @@
+// Renders individual text bubbles. Uses 'flutter_markdown' to display rich text (bold, lists, code) from the AI. Aligns User messages to the right and AI to the left.

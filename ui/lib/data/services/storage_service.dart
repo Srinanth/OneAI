@@ -1,0 +1,2 @@
+// Wraps 'SharedPreferences' to provide a persistent local storage layer,
+// allowing the app to save and retrieve simple key-value pairs like the user's API keys, their unique User ID, and their preferred Theme Mode across app restarts.

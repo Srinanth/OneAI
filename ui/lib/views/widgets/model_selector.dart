@@ -1,0 +1,1 @@
+// A Dropdown button located in the AppBar. Allows changing the 'activeModelId' for the NEXT message sent. Updates the ActiveChatProvider state.

@@ -1,0 +1,2 @@
+// Acts as the bridge between the Logic layer and the Data layer; it calls the apiclient endpoints,
+// catches exceptions, and converts the raw JSON responses into strongly-typed domain Models (ChatSession, Message, Artifact) for the UI.
