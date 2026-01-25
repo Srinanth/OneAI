@@ -1,64 +1,78 @@
-// The core interface of the app, designed to mimic ChatGPT/Gemini. It displays the active conversation in the center and features a 'ModelSelector' in the message bar to switch LLMs instantly.
-// It also includes a Side Menu (Drawer) to access the history of previous chats.
-
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ui/logic/settings_provider.dart';
+import 'package:ui/views/screens/settings_screen.dart';
+import '../../logic/chat_provider.dart';
+import '../../core/constants.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/model_selector.dart';
-import '../../core/constants.dart';
 
-class ChatScreen extends StatefulWidget {
-  final String? chatId; // If null, it's a new chat
+class ChatScreen extends ConsumerStatefulWidget {
+  final String? chatId;
   final String? initialTitle;
 
   const ChatScreen({super.key, this.chatId, this.initialTitle});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
-  // Local state for UI testing (will replace with Provider later)
   String _selectedModel = AppConstants.supportedModels.first;
-  bool _isTyping = false;
-  
-  // Mock Data to visualize UI
-  final List<Map<String, dynamic>> _messages = [
-    {'role': 'assistant', 'content': 'Hello! I am your AI assistant. **How can I help you today?**'},
-    {'role': 'user', 'content': 'I need a Flutter UI for a chat app.'},
-    {'role': 'assistant', 'content': 'Here is a breakdown of what you need:\n\n1. `ListView` for messages.\n2. `TextField` for input.\n3. `Markdown` support.\n\nShall I write the code?'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.chatId != null) {
+        ref.read(activeChatProvider.notifier).loadChat(widget.chatId!);
+      } else {
+        ref.read(activeChatProvider.notifier).clear();
+      }
+    });
+  }
 
   void _sendMessage() {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    setState(() {
-      _messages.add({'role': 'user', 'content': text});
-      _isTyping = true;
-      _textController.clear();
-    });
+    // 1. Get the correct key from settings
+    final settingsNotifier = ref.read(settingsProvider.notifier);
+    final apiKey = settingsNotifier.getKeyForModel(_selectedModel);
 
-    // Simulate AI thinking delay
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isTyping = false;
-          _messages.add({'role': 'assistant', 'content': 'This is a mock response from **$_selectedModel**.'});
-          _scrollToBottom();
-        });
-      }
-    });
+    // 2. Validate
+    if (apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Missing API Key for $_selectedModel'),
+          action: SnackBarAction(
+            label: 'Settings',
+            onPressed: () => Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (_) => const SettingsScreen())
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+    
+    _textController.clear();
+    
+    // 3. Send
+    ref.read(activeChatProvider.notifier).sendMessage(
+      text, 
+      _selectedModel, 
+      apiKey // <--- Using the saved key!
+    );
     
     _scrollToBottom();
   }
 
   void _scrollToBottom() {
-    // Small delay to ensure list has rendered the new item
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -71,56 +85,54 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(activeChatProvider);
+    final messages = chatState.messages;
+
     return Scaffold(
       appBar: AppBar(
         title: widget.initialTitle != null 
             ? Text(widget.initialTitle!) 
             : ModelSelector(
                 currentModelId: _selectedModel,
-                onModelChanged: (newModel) => setState(() => _selectedModel = newModel),
+                onModelChanged: (val) => setState(() => _selectedModel = val),
               ),
         centerTitle: true,
         actions: [
-          // Token Badge (Visual only for now)
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-            ),
-            child: const Text(
-              '120 Tokens',
-              style: TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.bold),
-            ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
           ),
         ],
       ),
       body: Column(
         children: [
-          // 1. Chat List
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(bottom: 20, top: 10),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                // If it's the last item and we are typing, show the loading bubble
-                if (_isTyping && index == _messages.length) {
-                  return const MessageBubble(content: '', isUser: false, isThinking: true);
-                }
+            child: chatState.error != null
+                ? Center(child: Text('Error: ${chatState.error}'))
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    itemCount: messages.length + (chatState.isLoading ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (chatState.isLoading && index == messages.length) {
+                        return const MessageBubble(content: '', isUser: false, isThinking: true);
+                      }
 
-                final msg = _messages[index];
-                return MessageBubble(
-                  content: msg['content'],
-                  isUser: msg['role'] == 'user',
-                );
-              },
-            ),
+                      final msg = messages[index];
+                      return MessageBubble(
+                        content: msg.content,
+                        isUser: msg.isUser,
+                      );
+                    },
+                  ),
           ),
-
-          // 2. Input Area
+          
+          // Input Area
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -137,20 +149,15 @@ class _ChatScreenState extends State<ChatScreen> {
                     maxLines: 5,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
-                      hintText: 'Type a message...',
-                      border: InputBorder.none, // Removed border for cleaner look inside the bubble
-                      contentPadding: EdgeInsets.zero,
+                      hintText: 'Ask the AI...',
+                      border: InputBorder.none,
                     ),
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
-                const SizedBox(width: 8),
                 IconButton.filled(
-                  onPressed: _sendMessage,
+                  onPressed: chatState.isLoading ? null : _sendMessage,
                   icon: const Icon(Icons.arrow_upward),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                  ),
                 ),
               ],
             ),

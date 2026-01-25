@@ -110,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: true,
               ),
               
-              // Only show Confirm Password if in Sign Up mode
               if (isSignUp) ...[
                 const SizedBox(height: 16),
                 TextField(
@@ -125,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 24),
 
-              // 3. Main Action Button
               if (isLoading)
                 const Center(child: CircularProgressIndicator())
               else
@@ -140,12 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 16),
 
-              // 4. Toggle Link
               TextButton(
                 onPressed: () {
                   setState(() {
                     isSignUp = !isSignUp;
-                    // Clear errors/inputs when switching to feel fresh
                     confirmPasswordController.clear();
                   });
                 },
