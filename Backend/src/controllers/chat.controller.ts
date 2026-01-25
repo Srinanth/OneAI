@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import {Response } from 'express';
 import { ChatService } from '../services/chat.service.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 
@@ -6,8 +6,7 @@ export class ChatController {
 
   static async startChat(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = req.user?.id;
-      const { modelId, title } = req.body;
+      const { modelId, title,userId } = req.body;
       
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized: Missing userId' });
@@ -22,17 +21,19 @@ export class ChatController {
     }
   }
 
-static async sendMessage(req: Request, res: Response) {
+  static async sendMessage(req: AuthenticatedRequest, res: Response) {
     try {
       const { chatId } = req.params;
-      const { message, apiKey, modelId, userId } = req.body;
+      const { message, apiKey, modelId,userId } = req.body;
 
       if (!chatId || typeof chatId !== 'string') {
         return res.status(400).json({ success: false, error: 'Invalid Chat ID' });
-      }
+    }
 
-      if (!userId) return res.status(401).json({ success: false, error: 'Unauthorized' });
+      if (!chatId) return res.status(400).json({ success: false, error: 'Invalid Chat ID' });
+      if (!userId) return res.status(401).json({ success: false, error: 'Unauthorized userID' });
       if (!message) return res.status(400).json({ success: false, error: 'Message is required' });
+      
       if (!apiKey) return res.status(400).json({ success: false, error: 'API Key is required' });
 
       const result = await ChatService.processMessage(
@@ -46,15 +47,16 @@ static async sendMessage(req: Request, res: Response) {
       res.json({
         success: true,
         data: {
-          response: result.text,
+          id: result.messageId,
+          content: result.text,
+          role: 'assistant',
           artifact: result.artifact
         }
       });
 
     } catch (error: any) {
       console.error('Message Error:', error);
-      const status = error.message.includes('not found') ? 404 : 500;
-      res.status(status).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: error.message });
     }
   }
 }

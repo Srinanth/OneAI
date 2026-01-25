@@ -43,15 +43,21 @@ export class ChatRepository {
     return data || [];
   }
 
-  static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string) {
-    const { error } = await supabase.from('messages').insert({
-      chat_id: chatId,
-      user_id: userId,
-      role,
-      content
-    });
+static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string) {
+    const { data, error } = await supabase
+        .from('messages')
+        .insert({
+            chat_id: chatId,
+            user_id: userId,
+            role,
+            content
+        })
+        .select()
+        .single();
+
     if (error) throw error;
-  }
+    return data;
+}
 
   static async updateChatState(chatId: string, userId: string, artifact: any, modelId: string) {
     const { error } = await supabase
