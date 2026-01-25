@@ -6,7 +6,7 @@ class AppConstants {
     final port = dotenv.env['BACKEND_PORT'] ?? '6767';
     
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2:$port';
+      return 'http://192.168.31.142:$port/api';
     }
     return 'http://localhost:$port';
   }
@@ -28,7 +28,7 @@ class AppConstants {
   }
   
   static const List<String> supportedModels = [
-    'gemini-1.5-flash',
+    'gemini-2.5-flash',
     'deepseek/deepseek-chat',
   ];
 }
