@@ -34,7 +34,8 @@ export class ChatService {
       chatId, 
       userId, 
       'assistant', 
-      response.text
+      response.text,
+      modelId
     );
 
     if (response.artifact) {

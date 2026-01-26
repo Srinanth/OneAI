@@ -43,14 +43,15 @@ export class ChatRepository {
     return data || [];
   }
 
-static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string) {
+static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string) {
     const { data, error } = await supabase
         .from('messages')
         .insert({
             chat_id: chatId,
             user_id: userId,
             role,
-            content
+            content,
+            model_id: modelId
         })
         .select()
         .single();

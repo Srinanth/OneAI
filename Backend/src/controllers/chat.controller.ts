@@ -35,13 +35,13 @@ export class ChatController {
       if (!message) return res.status(400).json({ success: false, error: 'Message is required' });
       
       if (!apiKey) return res.status(400).json({ success: false, error: 'API Key is required' });
-
+      const activeModelId = modelId || 'gemini-2.5-flash';
       const result = await ChatService.processMessage(
         userId, 
         chatId, 
         message, 
         apiKey, 
-        modelId
+        activeModelId
       );
 
       res.json({
@@ -50,7 +50,8 @@ export class ChatController {
           id: result.messageId,
           content: result.text,
           role: 'assistant',
-          artifact: result.artifact
+          artifact: result.artifact,
+          model_id: activeModelId
         }
       });
 
