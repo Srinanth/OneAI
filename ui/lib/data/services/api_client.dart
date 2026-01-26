@@ -14,7 +14,7 @@ class ApiClient {
     };
   }
 
-  static Future<Map<String, dynamic>> startChat(String title, String modelId) async {
+  static Future<Map<String, dynamic>> startChat(String title, String modelId,String apiKey) async {
     final url = Uri.parse('${AppConstants.apiBaseUrl}/chat/start');
     final headers = await _getHeaders();
     final user = Supabase.instance.client.auth.currentUser;
@@ -23,6 +23,7 @@ class ApiClient {
       'title': title, 
       'modelId': modelId,
       'userId': user.id,
+      'apiKey': apiKey,
     });
 
     final response = await http.post(url, headers: headers, body: body);

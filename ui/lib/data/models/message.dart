@@ -1,28 +1,27 @@
-// Data model representing a single chat bubble,
-// holding the message ID, role (user/assistant), textual content, and timestamp, along with a factory method to parse the JSON response from the Supabase 'messages' table.
 class ChatMessage {
   final String id;
   final String role;
   final String content;
   final DateTime timestamp;
+  final String? modelUsed;
 
   ChatMessage({
     required this.id,
     required this.role,
     required this.content,
     required this.timestamp,
+    this.modelUsed,
   });
 
   bool get isUser => role == 'user';
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      id: json['id'] ?? '',
-      role: json['role'] ?? 'user',
+      id: json['id'],
+      role: json['role'],
       content: json['content'] ?? '',
-      timestamp: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']).toLocal() 
-          : DateTime.now(),
+      timestamp: DateTime.parse(json['created_at']),
+      modelUsed: json['model_id'], 
     );
   }
 }

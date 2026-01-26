@@ -1,73 +1,58 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../data/models/message.dart'; 
 import '../data/services/api_client.dart';
-import 'chat_list_provider.dart'; 
-
-class ChatState {
-  final String? chatId;
-  final List<ChatMessage> messages;
-  final bool isLoading;
-  final String? error;
-
-  ChatState({
-    this.chatId,
-    this.messages = const [],
-    this.isLoading = false,
-    this.error,
-  });
-
-  ChatState copyWith({
-    String? chatId,
-    List<ChatMessage>? messages,
-    bool? isLoading,
-    String? error,
-  }) {
-    return ChatState(
-      chatId: chatId ?? this.chatId,
-      messages: messages ?? this.messages,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
-  }
-}
+import 'chat_list_provider.dart';
+import 'states/chat_state.dart';
 
 class ActiveChatNotifier extends Notifier<ChatState> {
-  
   @override
   ChatState build() {
     return ChatState();
-  }
-
-  Future<void> loadChat(String chatId) async {
-    state = ChatState(chatId: chatId, isLoading: true);
-    
-    try {
-      final response = await Supabase.instance.client
-          .from('messages')
-          .select()
-          .eq('chat_id', chatId)
-          .order('created_at', ascending: true);
-
-      final List<dynamic> data = response as List<dynamic>;
-      final messages = data.map((json) => ChatMessage.fromJson(json)).toList();
-
-      state = state.copyWith(messages: messages, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
   }
 
   void clear() {
     state = ChatState();
   }
 
+  Future<void> loadChat(String chatId) async {
+    state = ChatState(chatId: chatId, isLoading: true);
+    
+    try {
+      final messagesResponse = await Supabase.instance.client
+          .from('messages')
+          .select()
+          .eq('chat_id', chatId)
+          .order('created_at', ascending: true);
+
+      final List<dynamic> msgData = messagesResponse as List<dynamic>;
+      final messages = msgData.map((json) => ChatMessage.fromJson(json)).toList();
+
+      final chatResponse = await Supabase.instance.client
+          .from('chats')
+          .select('model_id')
+          .eq('id', chatId)
+          .single();
+      
+      final savedModelId = chatResponse['model_id'] as String?;
+
+      state = state.copyWith(
+        messages: messages, 
+        isLoading: false,
+        lastUsedModel: savedModelId,
+        chatId: chatId
+      );
+
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
   Future<void> sendMessage(String content, String modelId, String apiKey) async {
     if (content.trim().isEmpty) return;
 
     final tempUserMsg = ChatMessage(
-      id: 'temp-${DateTime.now()}', 
+      id: 'temp-${DateTime.now().millisecondsSinceEpoch}', 
       role: 'user', 
       content: content, 
       timestamp: DateTime.now()
@@ -80,8 +65,9 @@ class ActiveChatNotifier extends Notifier<ChatState> {
 
       if (state.chatId == null) {
         final startResponse = await ApiClient.startChat(
-           content.length > 20 ? '${content.substring(0, 20)}...' : content, 
-           modelId
+           content, 
+           modelId,
+           apiKey
         );
         
         currentChatId = startResponse['data']['id']; 
@@ -99,13 +85,15 @@ class ActiveChatNotifier extends Notifier<ChatState> {
       
       final data = msgResponse['data'];
       final aiMsg = ChatMessage(
-        id: data['id'] ?? 'ai-${DateTime.now()}', 
+        id: data['id'] ?? 'ai-${DateTime.now().millisecondsSinceEpoch}', 
         role: 'assistant', 
         content: data['content'],
-        timestamp: DateTime.now()
+        timestamp: DateTime.now(),
+        modelUsed: data['model_id'] 
       );
 
       state = state.copyWith(messages: [...state.messages, aiMsg], isLoading: false);
+
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

@@ -1,60 +1,55 @@
-import 'package:flutter_riverpod/legacy.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../data/services/storage_service.dart';
+
+final storageServiceProvider = Provider<StorageService>((ref) {
+  throw UnimplementedError();
+});
 
 class SettingsState {
   final String geminiKey;
   final String deepSeekKey;
-  final bool isLoading;
 
-  SettingsState({
-    this.geminiKey = '',
-    this.deepSeekKey = '',
-    this.isLoading = true,
-  });
+  SettingsState({this.geminiKey = '', this.deepSeekKey = ''});
 
-  SettingsState copyWith({String? geminiKey, String? deepSeekKey, bool? isLoading}) {
+  SettingsState copyWith({String? geminiKey, String? deepSeekKey}) {
     return SettingsState(
       geminiKey: geminiKey ?? this.geminiKey,
       deepSeekKey: deepSeekKey ?? this.deepSeekKey,
-      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
 
-class SettingsNotifier extends StateNotifier<SettingsState> {
-  SettingsNotifier() : super(SettingsState()) {
-    loadSettings();
-  }
-
-  Future<void> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = SettingsState(
-      geminiKey: prefs.getString('gemini_key') ?? '',
-      deepSeekKey: prefs.getString('deepseek_key') ?? '',
-      isLoading: false,
+class SettingsNotifier extends AsyncNotifier<SettingsState> {
+  @override
+  Future<SettingsState> build() async {
+    // Access the service
+    final storage = ref.watch(storageServiceProvider);
+    
+    return SettingsState(
+      geminiKey: storage.getGeminiKey() ?? '',
+      deepSeekKey: storage.getDeepSeekKey() ?? '',
     );
   }
 
   Future<void> saveKeys({String? gemini, String? deepSeek}) async {
-    final prefs = await SharedPreferences.getInstance();
-    
+    final storage = ref.read(storageServiceProvider);
+    final currentState = state.value ?? SettingsState();
+    var newState = currentState;
+
     if (gemini != null) {
-      await prefs.setString('gemini_key', gemini);
-      state = state.copyWith(geminiKey: gemini);
+      await storage.setGeminiKey(gemini);
+      newState = newState.copyWith(geminiKey: gemini);
     }
-    
+
     if (deepSeek != null) {
-      await prefs.setString('deepseek_key', deepSeek);
-      state = state.copyWith(deepSeekKey: deepSeek);
+      await storage.setDeepSeekKey(deepSeek);
+      newState = newState.copyWith(deepSeekKey: deepSeek);
     }
-  }
-  
-  String getKeyForModel(String modelId) {
-    if (modelId.startsWith('deepseek')) return state.deepSeekKey;
-    return state.geminiKey; 
+
+    state = AsyncValue.data(newState);
   }
 }
 
-final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((_) {
+final settingsProvider = AsyncNotifierProvider<SettingsNotifier, SettingsState>(() {
   return SettingsNotifier();
 });

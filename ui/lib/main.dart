@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants.dart';
 import 'core/theme.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'data/services/storage_service.dart';
+import 'logic/settings_provider.dart';
+import 'logic/auth_provider.dart';
 import 'views/screens/login_screen.dart'; 
 import 'views/screens/home_screen.dart';
 
@@ -17,7 +20,16 @@ Future<void> main() async {
     anonKey: AppConstants.supabaseAnonKey,
   );
 
-  runApp(const ProviderScope(child: MyApp()));
+  final storageService = await StorageService.init();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        storageServiceProvider.overrideWithValue(storageService),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -31,32 +43,32 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const AuthGate(),
+      home: const AuthWrapper(),
     );
   }
 }
 
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+class AuthWrapper extends ConsumerWidget {
+  const AuthWrapper({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<AuthState>(
-      stream: Supabase.instance.client.auth.onAuthStateChange,
-      builder: (context, snapshot) {
-        
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authUserProvider);
 
-        final session = snapshot.data?.session;
-
-        if (session != null) {
+    return authState.when(
+      data: (user) {
+        if (user != null) {
           return const HomeScreen();
         } else {
           return const LoginScreen();
         }
       },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => Scaffold(
+        body: Center(child: Text('Auth Error: $err')),
+      ),
     );
   }
 }
