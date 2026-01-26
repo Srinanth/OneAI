@@ -72,4 +72,7 @@ static async saveMessage(chatId: string, userId: string, role: 'user' | 'assista
 
     if (error) throw error;
   }
+  static async updateChatModel(chatId: string, modelId: string) {
+    await supabase.from('chats').update({ model_id: modelId }).eq('id', chatId);
+  }
 }

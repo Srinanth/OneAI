@@ -6,13 +6,13 @@ export class ChatController {
 
   static async startChat(req: AuthenticatedRequest, res: Response) {
     try {
-      const { modelId, title,userId } = req.body;
+      const { modelId, title,userId, apiKey } = req.body;
       
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized: Missing userId' });
       }
 
-      const chat = await ChatService.startSession(userId, modelId, title);
+      const chat = await ChatService.startSession(userId, modelId, title, apiKey);
 
       res.status(201).json({ success: true, data: chat });
     } catch (error: any) {
