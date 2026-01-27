@@ -43,7 +43,7 @@ export class ChatRepository {
     return data || [];
   }
 
-static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string) {
+static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string,tokens?:Number) {
     const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -51,7 +51,8 @@ static async saveMessage(chatId: string, userId: string, role: 'user' | 'assista
             user_id: userId,
             role,
             content,
-            model_id: modelId
+            model_id: modelId,
+            token_count: tokens
         })
         .select()
         .single();
@@ -59,6 +60,29 @@ static async saveMessage(chatId: string, userId: string, role: 'user' | 'assista
     if (error) throw error;
     return data;
 }
+
+  static async getModelUsage(chatId: string, modelId: string) {
+    const { data, error } = await supabase
+        .from('chat_model_usage')
+        .select('token_usage_count, last_limit_reset_at')
+        .eq('chat_id', chatId)
+        .eq('model_id', modelId)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async updateUsage(chatId: string, modelId: string, tokens?:Number, resetHours?: Number) {
+    const { error } = await supabase.rpc('increment_chat_usage_v2', { 
+      chat_id_param: chatId, 
+      model_id_param: modelId,
+      tokens_to_add: tokens,
+      reset_hours: resetHours
+    });
+
+    if (error) throw error;
+  }
 
   static async updateChatState(chatId: string, userId: string, artifact: any, modelId: string) {
     const { error } = await supabase
@@ -72,7 +96,20 @@ static async saveMessage(chatId: string, userId: string, role: 'user' | 'assista
 
     if (error) throw error;
   }
+
   static async updateChatModel(chatId: string, modelId: string) {
     await supabase.from('chats').update({ model_id: modelId }).eq('id', chatId);
+  }
+
+  static async deleteChat(chatId: string, userId: string) {
+    const { error } = await supabase.from('chats').delete().eq('id', chatId).eq('user_id', userId);
+    if (error) throw error;
+  }
+
+  static async renameChat(chatId: string, userId: string, newTitle: string) {
+    const { error } = await supabase.from('chats')
+        .update({ title: newTitle, is_custom_title: true })
+        .eq('id', chatId).eq('user_id', userId);
+    if (error) throw error;
   }
 }

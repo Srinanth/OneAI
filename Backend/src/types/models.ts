@@ -1,16 +1,27 @@
-// List of all models
-export type ModelId = 
-  | 'gpt-4o' 
-  | 'gpt-3.5-turbo' 
-  | 'claude-3-5-sonnet' 
-  | 'deepseek-coder';
-
-export type AIProviderId = 'openai' | 'anthropic' | 'deepseek';
-
-// What the Frontend needs to render the dropdown
 export interface ModelConfig {
-  id: ModelId;
-  displayName: string;    // e.g: "GPT-4 Omni"
-  provider: AIProviderId; // which model used
-  contextWindow: number;
+    max: number;
+    resetHours: number;
+    displayName: string;
 }
+
+export const MODEL_LIMITS: Record<string, ModelConfig> = {
+    'gemini-2.5-flash': { 
+        max: 100000, 
+        resetHours: 6, 
+        displayName: 'Gemini 2.5 Flash' 
+    },
+    'deepseek/deepseek-chat': { 
+        max: 5000, 
+        resetHours: 12, 
+        displayName: 'DeepSeek Chat' 
+    },
+    'default': { 
+        max: 2000, 
+        resetHours: 6, 
+        displayName: 'Standard Model' 
+    }
+};
+
+export const getModelLimit = (modelId: string): ModelConfig => {
+    return MODEL_LIMITS[modelId] ?? MODEL_LIMITS['default']!;
+};
