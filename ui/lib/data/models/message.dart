@@ -21,7 +21,7 @@ class ChatMessage {
       role: json['role'],
       content: json['content'] ?? '',
       timestamp: DateTime.parse(json['created_at']),
-      modelUsed: json['model_id'], 
+      modelUsed: json['model_id'] as String? ?? 'gemini-2.5-flash', 
     );
   }
 }

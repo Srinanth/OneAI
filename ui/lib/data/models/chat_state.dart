@@ -6,6 +6,8 @@ class ChatState {
   final bool isLoading;
   final String? error;
   final String? lastUsedModel; 
+  final int currentUsage;
+  final int maxLimit;
 
   ChatState({
     this.chatId,
@@ -13,6 +15,8 @@ class ChatState {
     this.isLoading = false,
     this.error,
     this.lastUsedModel,
+    this.currentUsage = 0,
+    this.maxLimit = 100000,
   });
 
   ChatState copyWith({
@@ -21,6 +25,8 @@ class ChatState {
     bool? isLoading,
     String? error,
     String? lastUsedModel,
+    int? currentUsage,
+    int? maxLimit,
   }) {
     return ChatState(
       chatId: chatId ?? this.chatId,
@@ -28,6 +34,8 @@ class ChatState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       lastUsedModel: lastUsedModel ?? this.lastUsedModel,
+      currentUsage: currentUsage ?? this.currentUsage,
+      maxLimit: maxLimit ?? this.maxLimit,
     );
   }
 }

@@ -6,6 +6,7 @@ import '../widgets/model_selector.dart';
 import '../widgets/chat_sidebar.dart'; 
 import 'chat_screen.dart';
 import 'settings_screen.dart';
+import '../widgets/token_badge.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -30,18 +31,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: ModelSelector(
           currentModelId: currentModel,
           onModelChanged: (val) {
-             if (isNewChat) {
-               setState(() => _tempModelId = val);
-             } else {
-               setState(() => _tempModelId = val);
-             }
+            setState(() => _tempModelId = val);
+            ref.read(activeChatProvider.notifier).updateModelUsage(val);
           },
         ),
         centerTitle: true,
         actions: [
-           IconButton(
+          if (!isNewChat) 
+            Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: Center(
+                child: TokenBadge(
+                  current: chatState.currentUsage,
+                  max: chatState.maxLimit,
+                ),
+              ),
+            ),
+          IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            onPressed: () => Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
           ),
         ],
       ),

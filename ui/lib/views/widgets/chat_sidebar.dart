@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../logic/chat_list_provider.dart';
 import '../../logic/chat_provider.dart';
 import '../../logic/auth_provider.dart';
+import '../widgets/rename_dialog.dart';
 
 class ChatDrawer extends ConsumerWidget {
   const ChatDrawer({super.key});
@@ -77,6 +78,40 @@ class ChatDrawer extends ConsumerWidget {
                               fontSize: 14, 
                               fontWeight: isActive ? FontWeight.w600 : FontWeight.w400
                             ),
+                          ),
+                          trailing: PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, size: 18),
+                            onSelected: (action) async {
+                              if (action == 'rename') {
+                                final newTitle = await showDialog<String>(
+                                  context: context,
+                                  builder: (_) => RenameDialog(currentTitle: chat.title),
+                                );
+                                if (newTitle != null && newTitle.isNotEmpty) {
+                                  ref.read(chatListProvider.notifier).renameChat(chat.id, newTitle);
+                                }
+                              } else if (action == 'delete') {
+                                ref.read(chatListProvider.notifier).deleteChat(chat.id);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'rename',
+                                child: ListTile(
+                                  leading: Icon(Icons.edit, size: 20),
+                                  title: Text('Rename'),
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: ListTile(
+                                  leading: Icon(Icons.delete, size: 20, color: Colors.red),
+                                  title: Text('Delete', style: TextStyle(color: Colors.red)),
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                            ],
                           ),
                           onTap: () {
                             Navigator.pop(context);

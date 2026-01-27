@@ -1,5 +1,3 @@
-// A Dropdown button located in the AppBar. Allows changing the 'activeModelId' for the NEXT message sent. Updates the ActiveChatProvider state.
-
 import 'package:flutter/material.dart';
 import '../../core/constants.dart';
 
@@ -56,8 +54,8 @@ class ModelSelector extends StatelessWidget {
   }
 
   String _formatModelName(String id) {
-    if (id.contains('gemini')) return 'Gemini Flash';
-    if (id.contains('deepseek')) return 'DeepSeek V3';
+    if (id.contains('gemini')) return 'Gemini';
+    if (id.contains('deepseek')) return 'DeepSeek';
     return id;
   }
 }
