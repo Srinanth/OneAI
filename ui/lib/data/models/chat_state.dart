@@ -1,4 +1,4 @@
-import '../../data/models/message.dart';
+import 'message.dart';
 
 class ChatState {
   final String? chatId;

@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models/message.dart'; 
 import '../data/services/api_client.dart';
 import 'chat_list_provider.dart';
-import 'states/chat_state.dart';
+import '../data/models/chat_state.dart';
 
 class ActiveChatNotifier extends Notifier<ChatState> {
   @override

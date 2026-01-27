@@ -1,2 +1,0 @@
-// Data model for the artifact of each of the conversation, containing the Version number,
-// Summary, lists of Facts, Decisions, and Open Questions, which allows parsing the nested JSON object returned by the AI into a Dart class.
