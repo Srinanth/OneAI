@@ -1,12 +1,16 @@
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-class ModelMetadata {
-  final int maxTokens;
+  class ModelMetadata {
   final String displayName;
+  final String provider;
+  final int maxTokens;
 
-  const ModelMetadata({required this.maxTokens, required this.displayName});
+  const ModelMetadata({
+    required this.displayName,
+    required this.provider,
+    required this.maxTokens,
+  });
 }
-
 class AppConstants {
   static String get apiBaseUrl {
     final port = dotenv.env['BACKEND_PORT'] ?? '6767';
@@ -33,21 +37,21 @@ class AppConstants {
     return key;
   }
   
-  static const List<String> supportedModels = [
-    'gemini-2.5-flash',
-    'deepseek/deepseek-chat',
-  ];
+  static const Map<String, List<String>> modelFamilies = {
+    'Gemini': ['gemini-2.5-flash', 'gemini-3-pro-preview', 'gemini-2-flash'],
+    'DeepSeek': ['deepseek/deepseek-chat', 'deepseek/deepseek-reasoner'],
+    'ChatGPT': ['openai/gpt-5-chat', 'openai/gpt-5-pro'],
+  };
 
   static const Map<String, ModelMetadata> modelRegistry = {
-    'gemini-2.5-flash': ModelMetadata(
-      maxTokens: 100000, 
-      displayName: 'Gemini 1.5 Flash',
-    ),
-    'deepseek/deepseek-chat': ModelMetadata(
-      maxTokens: 5000,    // for sample usage,just for now
-      displayName: 'DeepSeek Chat',
-    ),
+    'gemini-2.5-flash': ModelMetadata(displayName: 'Gemini 2.5 Flash', provider: 'Gemini', maxTokens: 100000),
+    'gemini-3-pro-preview': ModelMetadata(displayName: 'Gemini 3 Pro', provider: 'Gemini', maxTokens: 3000000),
+    'deepseek/deepseek-chat': ModelMetadata(displayName: 'DeepSeek Chat', provider: 'DeepSeek', maxTokens: 15000),
+    'openai/gpt-5-chat': ModelMetadata(displayName: 'GPT-5 Chat', provider: 'ChatGPT', maxTokens: 10000),
+    'openai/gpt-5-pro': ModelMetadata(displayName: 'GPT-5 Pro', provider: 'ChatGPT', maxTokens: 5000),
   };
+
+  static const List<String> supportedModels = ['Gemini', 'DeepSeek', 'ChatGPT'];
 
   static int getLimitForModel(String? modelId) {
     if (modelId == null) return 100000;

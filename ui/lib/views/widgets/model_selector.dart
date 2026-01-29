@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import '../../core/constants.dart';
 
 class ModelSelector extends StatelessWidget {
-  final String currentModelId;
-  final ValueChanged<String> onModelChanged;
+  final String currentProvider;
+  final ValueChanged<String> onProviderChanged;
 
   const ModelSelector({
     super.key,
-    required this.currentModelId,
-    required this.onModelChanged,
+    required this.currentProvider,
+    required this.onProviderChanged,
   });
 
   @override
@@ -21,7 +21,7 @@ class ModelSelector extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: currentModelId,
+          value: currentProvider,
           icon: const Icon(Icons.arrow_drop_down, size: 20),
           isDense: true,
           style: TextStyle(
@@ -29,33 +29,46 @@ class ModelSelector extends StatelessWidget {
             fontWeight: FontWeight.w500,
             fontSize: 13,
           ),
-          items: AppConstants.supportedModels.map((modelId) {
-            return DropdownMenuItem(
-              value: modelId,
+          items: AppConstants.supportedModels.map((provider) {
+            return DropdownMenuItem<String>(
+              value: provider,
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    modelId.contains('gemini') ? Icons.auto_awesome : Icons.psychology,
+                    _getIcon(provider),
                     size: 16,
-                    color: modelId.contains('gemini') ? Colors.blue : Colors.purple,
+                    color: _getColor(provider),
                   ),
                   const SizedBox(width: 8),
-                  Text(_formatModelName(modelId)),
+                  Text(provider),
                 ],
               ),
             );
           }).toList(),
           onChanged: (value) {
-            if (value != null) onModelChanged(value);
+            if (value != null) onProviderChanged(value);
           },
         ),
       ),
     );
   }
 
-  String _formatModelName(String id) {
-    if (id.contains('gemini')) return 'Gemini';
-    if (id.contains('deepseek')) return 'DeepSeek';
-    return id;
+  IconData _getIcon(String p) {
+    switch (p) {
+      case 'Gemini': return Icons.auto_awesome;
+      case 'DeepSeek': return Icons.psychology;
+      case 'ChatGPT': return Icons.bolt;
+      default: return Icons.chat_bubble_outline;
+    }
+  }
+
+  Color _getColor(String p) {
+    switch (p) {
+      case 'Gemini': return Colors.blue;
+      case 'DeepSeek': return Colors.purple;
+      case 'ChatGPT': return Colors.orange;
+      default: return Colors.grey;
+    }
   }
 }

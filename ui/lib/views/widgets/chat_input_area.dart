@@ -5,7 +5,7 @@ import '../../logic/chat_provider.dart';
 import '../screens/settings_screen.dart';
 
 class ChatInputArea extends ConsumerStatefulWidget {
-  final String selectedModelId;
+  final String selectedModelId; 
   final VoidCallback onMessageSent;
 
   const ChatInputArea({
@@ -32,12 +32,25 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
     if (text.isEmpty) return;
 
     final settings = ref.read(settingsProvider);
-
+    String targetModelId = '';
     String apiKey = '';
-    if (widget.selectedModelId.contains('deepseek')) {
-      apiKey = settings.deepSeekKey;
-    } else {
-      apiKey = settings.geminiKey;
+
+    switch (widget.selectedModelId) {
+      case 'Gemini':
+        targetModelId = settings.selectedGemini;
+        apiKey = settings.geminiKey;
+        break;
+      case 'DeepSeek':
+        targetModelId = settings.selectedDeepSeek;
+        apiKey = settings.deepSeekKey;
+        break;
+      case 'ChatGPT':
+        targetModelId = settings.selectedOpenRouter;
+        apiKey = settings.openRouterKey;
+        break;
+      default:
+        targetModelId = widget.selectedModelId;
+        apiKey = settings.geminiKey;
     }
 
     if (apiKey.isEmpty) {
@@ -59,7 +72,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
     _textController.clear();
     ref.read(activeChatProvider.notifier).sendMessage(
       text,
-      widget.selectedModelId,
+      targetModelId,
       apiKey,
     );
 

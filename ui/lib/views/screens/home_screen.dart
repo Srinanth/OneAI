@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/data/models/chat_state.dart';
+import 'package:ui/logic/settings_provider.dart';
 import '../../logic/chat_provider.dart';
 import '../../core/constants.dart';
 import '../widgets/model_selector.dart';
@@ -17,22 +18,41 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String _tempModelId = AppConstants.supportedModels.first;
+  String _tempProvider = AppConstants.supportedModels.first;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncUsageWithSettings();
+    });
+  }
+
+  void _syncUsageWithSettings() {
+    final settings = ref.read(settingsProvider);
+    final targetModel = _getTargetModel(_tempProvider, settings);
+    ref.read(activeChatProvider.notifier).updateModelUsage(targetModel);
+  }
 
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(activeChatProvider);
+    final settings = ref.watch(settingsProvider);
+    
     final isNewChat = chatState.chatId == null;
-    final currentModel = isNewChat ? _tempModelId : (chatState.lastUsedModel ?? _tempModelId);
+    
+    String currentProvider = _tempProvider;
+    if (!isNewChat && chatState.lastUsedModel != null) {
+      currentProvider = AppConstants.modelRegistry[chatState.lastUsedModel!]?.provider ?? _tempProvider;
+    }
 
     ref.listen<ChatState>(activeChatProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.error!),
+            content: Text(next.error!), 
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -42,10 +62,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       drawer: const ChatDrawer(),
       appBar: AppBar(
         title: ModelSelector(
-          currentModelId: currentModel,
-          onModelChanged: (val) {
-            setState(() => _tempModelId = val);
-            ref.read(activeChatProvider.notifier).updateModelUsage(val);
+          currentProvider: currentProvider,
+          onProviderChanged: (val) {
+            setState(() => _tempProvider = val);
+            
+            final targetModel = _getTargetModel(val, settings);
+            ref.read(activeChatProvider.notifier).updateModelUsage(targetModel);
           },
         ),
         centerTitle: true,
@@ -56,11 +78,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            onPressed: () => Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (_) => const SettingsScreen())
+            ),
           ),
         ],
       ),
-      body: ChatInterface(selectedModelId: currentModel),
+      body: ChatInterface(selectedModelId: currentProvider), 
     );
+  }
+
+  String _getTargetModel(String provider, SettingsState settings) {
+    switch (provider) {
+      case 'DeepSeek': 
+        return settings.selectedDeepSeek;
+      case 'ChatGPT':
+        return settings.selectedOpenRouter;
+      case 'Gemini':
+      default: 
+        return settings.selectedGemini;
+    }
   }
 }

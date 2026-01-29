@@ -25,13 +25,13 @@ class ChatDB {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return 0;
     
-    final today = DateTime.now().toIso8601String().split('T')[0];
+    // final today = DateTime.now().toIso8601String().split('T')[0]; enable tmrw
     final response = await _supabase
         .from('user_daily_usage')
         .select('token_count')
         .eq('user_id', userId)
         .eq('model_id', modelId)
-        .eq('usage_date', today)
+        // .eq('usage_date', today)
         .maybeSingle();
         
     return response?['token_count'] as int? ?? 0;

@@ -19,7 +19,7 @@ class ChatMessageList extends ConsumerWidget {
 
     return ListView.builder(
       controller: scrollController,
-      reverse: true, // Anchor to bottom
+      reverse: true,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: messages.length + (isLoading ? 1 : 0) + (hasMore ? 1 : 0),
       itemBuilder: (context, index) {
