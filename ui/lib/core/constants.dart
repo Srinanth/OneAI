@@ -13,12 +13,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 }
 class AppConstants {
   static String get apiBaseUrl {
+    final hostedUrl = dotenv.env['BACKEND_URL'];
+    if (hostedUrl != null && hostedUrl.isNotEmpty) {
+      return '$hostedUrl/api';
+    }
+
     final port = dotenv.env['BACKEND_PORT'] ?? '6767';
     
     if (Platform.isAndroid) {
       return 'http://192.168.31.142:$port/api';
     }
-    return 'http://localhost:$port';
+    return 'http://localhost:$port/api';
   }
 
   static String get supabaseUrl {
