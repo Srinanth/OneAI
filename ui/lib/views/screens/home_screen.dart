@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ui/data/models/chat_state.dart';
 import '../../logic/chat_provider.dart';
 import '../../core/constants.dart';
 import '../widgets/model_selector.dart';
@@ -22,9 +23,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final chatState = ref.watch(activeChatProvider);
     final isNewChat = chatState.chatId == null;
-
     final currentModel = isNewChat ? _tempModelId : (chatState.lastUsedModel ?? _tempModelId);
 
+    ref.listen<ChatState>(activeChatProvider, (previous, next) {
+      if (next.error != null && next.error != previous?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    });
+      
     return Scaffold(
       drawer: const ChatDrawer(),
       appBar: AppBar(
@@ -37,28 +50,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         centerTitle: true,
         actions: [
-          if (!isNewChat) 
-            Padding(
-              padding: const EdgeInsets.only(right: 4.0),
-              child: Center(
-                child: TokenBadge(
-                  current: chatState.currentUsage,
-                  max: chatState.maxLimit,
-                ),
-              ),
-            ),
+          const Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: Center(child: TokenBadge()),
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(
-              context, 
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
-      body: ChatInterface(
-        selectedModelId: currentModel, 
-      ),
+      body: ChatInterface(selectedModelId: currentModel),
     );
   }
 }

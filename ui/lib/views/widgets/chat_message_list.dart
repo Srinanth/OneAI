@@ -10,66 +10,62 @@ class ChatMessageList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final messages = ref.watch(activeChatProvider.select((s) => s.messages));
-    final isLoading = ref.watch(activeChatProvider.select((s) => s.isLoading));
-    final error = ref.watch(activeChatProvider.select((s) => s.error));
+    final chatState = ref.watch(activeChatProvider);
+    final messages = chatState.messages;
+    final isLoading = chatState.isLoading;
+    final hasMore = ref.read(activeChatProvider.notifier).hasMore;
 
-    if (error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text('Error: $error', style: const TextStyle(color: Colors.red)),
-        ),
-      );
-    }
-
-    if (messages.isEmpty && !isLoading) {
-      final theme = Theme.of(context);
-      return Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.auto_awesome, size: 48, color: theme.colorScheme.primary),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Start a new conversation',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Select a model above and type below.',
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    if (messages.isEmpty && !isLoading) return const _LandingUI();
 
     return ListView.builder(
       controller: scrollController,
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      itemCount: messages.length + (isLoading ? 1 : 0),
+      reverse: true, // Anchor to bottom
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: messages.length + (isLoading ? 1 : 0) + (hasMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (isLoading && index == messages.length) {
-          return const MessageBubble(content: '', isUser: false, isThinking: true);
+        if (isLoading && index == 0) {
+          return const RepaintBoundary(
+            child: MessageBubble(content: '', isUser: false, isThinking: true),
+          );
         }
 
-        final msg = messages[index];
-        return MessageBubble(
-          content: msg.content,
-          isUser: msg.isUser,
-          modelIcon: msg.isUser ? null : msg.modelUsed,
+        final messageIndex = isLoading ? index - 1 : index;
+
+        if (messageIndex == messages.length && hasMore) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+
+        if (messageIndex < 0 || messageIndex >= messages.length) return const SizedBox.shrink();
+
+        final message = messages[messageIndex];
+        return RepaintBoundary(
+          child: MessageBubble(
+            content: message.content,
+            isUser: message.role == 'user',
+            modelIcon: message.role == 'assistant' ? message.modelUsed : null,
+          ),
         );
       },
+    );
+  }
+}
+class _LandingUI extends StatelessWidget {
+  const _LandingUI();
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          const Text("How can I help you today?", 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey)),
+        ],
+      ),
     );
   }
 }
