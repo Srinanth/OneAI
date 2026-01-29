@@ -31,14 +31,7 @@ class _ChatInputAreaState extends ConsumerState<ChatInputArea> {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    final settingsAsync = ref.read(settingsProvider);
-    if (!settingsAsync.hasValue) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Loading settings... please wait.')),
-      );
-      return;
-    }
-    final settings = settingsAsync.value!;
+    final settings = ref.read(settingsProvider);
 
     String apiKey = '';
     if (widget.selectedModelId.contains('deepseek')) {
