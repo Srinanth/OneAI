@@ -21,7 +21,8 @@ class MessageBubble extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     
     if (isThinking) {
-       return Align(
+      return RepaintBoundary(
+       child: Align(
         alignment: Alignment.centerLeft,
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
@@ -35,13 +36,15 @@ class MessageBubble extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary)
           ),
         ),
+       )
       );
     }
 
     final backgroundColor = isUser ? colorScheme.primary : colorScheme.surfaceContainerHighest;
     final textColor = isUser ? colorScheme.onPrimary : colorScheme.onSurface;
 
-    return Align(
+    return RepaintBoundary(
+      child: Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
         crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -92,6 +95,7 @@ class MessageBubble extends StatelessWidget {
             ),
         ],
       ),
+     )
     );
   }
 
