@@ -22,7 +22,7 @@ export class ChatRepository {
   static async getChat(chatId: string, userId: string) {
     const { data, error } = await supabase
       .from('chats')
-      .select('*')
+      .select('id, user_id, title, model_id, current_artifact')
       .eq('id', chatId)
       .eq('user_id', userId)
       .single();
@@ -43,7 +43,7 @@ export class ChatRepository {
     return data || [];
   }
 
-static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string,tokens?:Number) {
+static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string,tokens?:number) {
     const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -52,33 +52,35 @@ static async saveMessage(chatId: string, userId: string, role: 'user' | 'assista
             role,
             content,
             model_id: modelId,
-            token_count: tokens
+            token_count: tokens || 0
         })
         .select()
         .single();
 
     if (error) throw error;
     return data;
-}
+  }
 
-  static async getModelUsage(chatId: string, modelId: string) {
+
+  static async getGlobalDailyUsage(userId: string, modelId: string) {
+    const today = new Date().toISOString().split('T')[0];
     const { data, error } = await supabase
-        .from('chat_model_usage')
-        .select('token_usage_count, last_limit_reset_at')
-        .eq('chat_id', chatId)
+        .from('user_daily_usage')
+        .select('token_count')
+        .eq('user_id', userId)
         .eq('model_id', modelId)
+        .eq('usage_date', today)
         .maybeSingle();
 
     if (error) throw error;
-    return data;
+    return data?.token_count || 0;
   }
 
-  static async updateUsage(chatId: string, modelId: string, tokens?:Number, resetHours?: Number) {
-    const { error } = await supabase.rpc('increment_chat_usage_v2', { 
-      chat_id_param: chatId, 
+  static async updateGlobalUsage(userId: string, modelId: string, tokens: number) {
+    const { error } = await supabase.rpc('increment_user_daily_usage', { 
+      user_id_param: userId, 
       model_id_param: modelId,
-      tokens_to_add: tokens,
-      reset_hours: resetHours
+      tokens_to_add: tokens
     });
 
     if (error) throw error;

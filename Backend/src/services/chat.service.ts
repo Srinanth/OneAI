@@ -77,15 +77,11 @@ export class ChatService {
 
     await ChatRepository.saveMessage(chatId, userId, 'user', userMessage, modelId);
 
-    const usage = await ChatRepository.getModelUsage(chatId, modelId);
+    const currentGlobalUsage = await ChatRepository.getGlobalDailyUsage(userId, modelId);
     const limit = getModelLimit(modelId);
-    
-    let currentCount = usage?.token_usage_count || 0;
-    const lastReset = usage?.last_limit_reset_at ? new Date(usage.last_limit_reset_at).getTime() : Date.now();
-    const hoursSinceReset = (Date.now() - lastReset) / (3600000);
 
-    if (currentCount >= limit.max && hoursSinceReset < limit.resetHours) {
-        const warningText = `🚨 **Model Limit Reached.**\n\nYou have used up todays quota** for ${modelId} in this chat.\n\n💡 *Tip: Switch to another model to continue.*`;
+    if (currentGlobalUsage >= limit.max) {
+        const warningText = `🚨 **Daily Quota Reached.**\n\nYou have used your daily allowance for ${limit.displayName}.\n\n💡 *Tip: Your quota resets daily at Midnight UTC. You can switch to another model to continue chatting now.*`;
 
         const savedWarning = await ChatRepository.saveMessage(chatId, userId, 'assistant', warningText, modelId, 0);
 
@@ -93,7 +89,7 @@ export class ChatService {
             text: warningText,
             artifact: null,
             messageId: savedWarning.id,
-            currentUsage: currentCount,
+            currentUsage: currentGlobalUsage,
             maxLimit: limit.max
         };
     }
@@ -107,7 +103,7 @@ export class ChatService {
       chatId, userId, 'assistant', response.text, modelId, response.tokensUsed.output
     );
 
-    await ChatRepository.updateUsage(chatId, modelId, response.tokensUsed.total, limit.resetHours);
+    await ChatRepository.updateGlobalUsage(userId, modelId, response.tokensUsed.total);
 
     if (response.artifact) {
       await ChatRepository.updateChatState(chatId, userId, response.artifact, modelId);
@@ -117,7 +113,7 @@ export class ChatService {
       text: response.text,
       artifact: response.artifact,
       messageId: savedAiMessage.id,
-      currentUsage: currentCount + response.tokensUsed.total,
+      currentUsage: currentGlobalUsage + response.tokensUsed.total,
       maxLimit: limit.max
     };
   }
