@@ -37,14 +37,11 @@ export class GeminiAdapter implements AIModelAdapter {
         },
         contents: conversationHistory,
       });
-      const responseText = response.text || "";  // uhhh if we get error look here btw, null response possible
+      const responseText = response.text || "";
 
       const newArtifact = this.artifactService.parseFromText(responseText, currentArtifact);
       const cleanText = this.artifactService.cleanResponse(responseText);
 
-      // usageMetadata might be in a different spot depending on exact version
-      // We default to 0 to prevent crashes if the preview model doesn't return it yet.
-      
       const usage = response.usageMetadata;
 
       return {
@@ -57,9 +54,18 @@ export class GeminiAdapter implements AIModelAdapter {
         },
       };
 
-    } catch (error) {
-      console.error(`Gemini (${this.id}) Error:`, error);
-      throw error;
+    } catch (error:any) {
+    const status = error.status || (error.error && error.error.code);
+    
+    if (status === 404) {
+      throw new Error("MODEL_NOT_FOUND");
+    }
+    if (status === 429) {
+      throw new Error("PROVIDER_QUOTA_EXCEEDED");
+    }
+    
+    console.error(`Gemini (${this.id}) Error:`, error.message);
+    throw error;
     }
   }
 }

@@ -1,6 +1,7 @@
 import { AIModelAdapter } from "../types/ai.js";
 import { GeminiAdapter } from "./adapter/gemini.adapter.js";
 import { DeepSeekAdapter } from "./adapter/deepseek.adapter.js";
+import { GPTAdapter } from "./adapter/gpt.adapter.js";
 
 export class AIFactory {
   /**
@@ -17,6 +18,10 @@ export class AIFactory {
       return new GeminiAdapter(modelId);
     }
 
+    if (modelId.startsWith("openai/")) {
+      return new GPTAdapter(modelId);
+    }
+    
     throw new Error(`Model ID '${modelId}' is not supported yet.`);
   }
 }

@@ -70,7 +70,7 @@ export class ChatService {
     apiKey: string, 
     modelId: string
   ): Promise<{ text: string; artifact: any; messageId: string; currentUsage?: number; maxLimit?: number }> {
-    
+    try{
     if (chatId) {
        await ChatRepository.updateChatModel(chatId, modelId);
     }
@@ -116,5 +116,22 @@ export class ChatService {
       currentUsage: currentGlobalUsage + response.tokensUsed.total,
       maxLimit: limit.max
     };
+  }catch (e: any) {
+    let userFriendlyMessage = "An unexpected error occurred.";
+
+    if (e.message === "MODEL_NOT_FOUND") {
+      userFriendlyMessage = " The selected model version is currently unavailable. Please try a different model in Settings.";
+    } else if (e.message === "PROVIDER_QUOTA_EXCEEDED") {
+      userFriendlyMessage = "Provider Rate Limit reached. Please wait a few seconds and try again.";
+    } else if (e.message === "INSUFFICIENT_CREDITS") {
+      userFriendlyMessage = " Insufficient credits on your provider account (OpenRouter). Please check your balance.";
+    } else if (e.message === "RATE_LIMIT_EXCEEDED") {
+      userFriendlyMessage = " Too many requests! Slow down a bit.";
+    } else {
+      userFriendlyMessage = `Error: ${e.message}`;
+    }
+
+    throw new Error(userFriendlyMessage);
+    }
   }
 }
