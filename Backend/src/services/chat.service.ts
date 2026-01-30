@@ -2,6 +2,7 @@ import { ChatRepository } from '../db/chat.db.js';
 import { AIFactory } from './manager.js';
 import { GoogleGenAI } from '@google/genai';
 import { getModelLimit } from '../types/models.js';
+import { SearchService } from './SAG/search.service.js';
 export class ChatService {
 
   static async generateSmartTitle(firstMessage: string, apiKey: string, modelId: string): Promise<string> {
@@ -70,53 +71,80 @@ export class ChatService {
     apiKey: string, 
     modelId: string
   ): Promise<{ text: string; artifact: any; messageId: string; currentUsage?: number; maxLimit?: number }> {
-    try{
-    if (chatId) {
-       await ChatRepository.updateChatModel(chatId, modelId);
-    }
+    
 
-    await ChatRepository.saveMessage(chatId, userId, 'user', userMessage, modelId);
+    try {
+      if (chatId) {
+        await ChatRepository.updateChatModel(chatId, modelId);
+      }
+      await ChatRepository.saveMessage(chatId, userId, 'user', userMessage, modelId);
 
-    const currentGlobalUsage = await ChatRepository.getGlobalDailyUsage(userId, modelId);
-    const limit = getModelLimit(modelId);
+      const currentGlobalUsage = await ChatRepository.getGlobalDailyUsage(userId, modelId);
+      const limit = getModelLimit(modelId);
 
-    if (currentGlobalUsage >= limit.max) {
-        const warningText = `🚨 **Daily Quota Reached.**\n\nYou have used your daily allowance for ${limit.displayName}.\n\n💡 *Tip: Your quota resets daily at Midnight UTC. You can switch to another model to continue chatting now.*`;
-
+      if (currentGlobalUsage >= limit.max) {
+        const warningText = `🚨 **Daily Quota Reached.**\n\nYou have used your daily allowance for ${limit.displayName}.`;
         const savedWarning = await ChatRepository.saveMessage(chatId, userId, 'assistant', warningText, modelId, 0);
 
         return {
-            text: warningText,
-            artifact: null,
-            messageId: savedWarning.id,
-            currentUsage: currentGlobalUsage,
-            maxLimit: limit.max
+          text: warningText,
+          artifact: null,
+          messageId: savedWarning.id,
+          currentUsage: currentGlobalUsage,
+          maxLimit: limit.max
         };
-    }
+      }
 
-    const history = await ChatRepository.getHistory(chatId, userId);
-    const chatData = await ChatRepository.getChat(chatId, userId); 
-    const adapter = AIFactory.createAdapter(modelId);
-    const response = await adapter.sendMessage(history, chatData.current_artifact, apiKey);
+      const searchTriggers = ["latest", "news", "current", "today", "who is", "what is the price of", "weather", "happened in"];
+      const needsSearch = searchTriggers.some(trigger => userMessage.toLowerCase().includes(trigger));
 
-    const savedAiMessage = await ChatRepository.saveMessage(
-      chatId, userId, 'assistant', response.text, modelId, response.tokensUsed.output
-    );
+      if (needsSearch) {
+        const urls = await SearchService.getWebUrls(userMessage);
+        
+        await Promise.all(urls.map(async (url) => {
+          const text = await SearchService.crawlAndExtract(url);
+          if (text) {
+            await SearchService.processAndStore(chatId, url, text);
+          }
+        }));
+      }
 
-    await ChatRepository.updateGlobalUsage(userId, modelId, response.tokensUsed.total);
+      const context = await SearchService.getRelevantContext(chatId, userMessage);
 
-    if (response.artifact) {
-      await ChatRepository.updateChatState(chatId, userId, response.artifact, modelId);
-    }
+      const finalInputForAI = context 
+        ? SearchService.buildRAGPrompt(userMessage, context) 
+        : userMessage;
 
-    return {
-      text: response.text,
-      artifact: response.artifact,
-      messageId: savedAiMessage.id,
-      currentUsage: currentGlobalUsage + response.tokensUsed.total,
-      maxLimit: limit.max
-    };
-  }catch (e: any) {
+      const history = await ChatRepository.getHistory(chatId, userId);
+      const chatData = await ChatRepository.getChat(chatId, userId); 
+      const adapter = AIFactory.createAdapter(modelId);
+      
+      const historyWithRAG = [...history];
+      if (context && historyWithRAG.length > 0) {
+        historyWithRAG[historyWithRAG.length - 1].content = finalInputForAI;
+      }
+
+      const response = await adapter.sendMessage(historyWithRAG, chatData.current_artifact, apiKey);
+
+      const savedAiMessage = await ChatRepository.saveMessage(
+        chatId, userId, 'assistant', response.text, modelId, response.tokensUsed.output
+      );
+
+      await ChatRepository.updateGlobalUsage(userId, modelId, response.tokensUsed.total);
+
+      if (response.artifact) {
+        await ChatRepository.updateChatState(chatId, userId, response.artifact, modelId);
+      }
+
+      return {
+        text: response.text,
+        artifact: response.artifact,
+        messageId: savedAiMessage.id,
+        currentUsage: currentGlobalUsage + response.tokensUsed.total,
+        maxLimit: limit.max
+      };
+
+    } catch (e: any) {
     let userFriendlyMessage = "An unexpected error occurred.";
 
     if (e.message === "MODEL_NOT_FOUND") {
