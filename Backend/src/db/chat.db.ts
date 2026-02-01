@@ -43,23 +43,23 @@ export class ChatRepository {
     return data || [];
   }
 
-// static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string,tokens?:number) {
-//     const { data, error } = await supabase
-//         .from('messages')
-//         .insert({
-//             chat_id: chatId,
-//             user_id: userId,
-//             role,
-//             content,
-//             model_id: modelId,
-//             token_count: tokens || 0
-//         })
-//         .select()
-//         .single();
+static async saveMessage(chatId: string, userId: string, role: 'user' | 'assistant', content: string, modelId?: string,tokens?:number) {
+    const { data, error } = await supabase
+        .from('messages')
+        .insert({
+            chat_id: chatId,
+            user_id: userId,
+            role,
+            content,
+            model_id: modelId,
+            token_count: tokens || 0
+        })
+        .select()
+        .single();
 
-//     if (error) throw error;
-//     return data;
-//   }
+    if (error) throw error;
+    return data;
+  }
 
 
   static async getGlobalDailyUsage(userId: string, modelId: string) {
