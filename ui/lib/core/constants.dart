@@ -21,7 +21,7 @@ class AppConstants {
     final port = dotenv.env['BACKEND_PORT'] ?? '6767';
     
     if (Platform.isAndroid) {
-      return 'http://192.168.31.142:$port/api';
+      return 'http://10.229.45.249:$port/api';
     }
     return 'http://localhost:$port/api';
   }

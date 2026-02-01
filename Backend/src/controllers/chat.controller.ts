@@ -1,32 +1,8 @@
-import {Request,Response } from 'express';
+import { Response } from 'express';
 import { ChatService } from '../services/chat.service.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export class ChatController {
-
-  static async getUsage(req: Request, res: Response) {
-    try {
-      const modelId = req.params.modelId as string;
-      const userId = req.params.userId as string;
-      
-      if (!userId || !modelId) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Missing userId or modelId' 
-        });
-      }
-
-      const usage = await ChatService.getCurrentUsage(userId, modelId);
-
-      res.status(200).json({ 
-        success: true, 
-        usage: usage 
-      });
-    } catch (error: any) {
-      console.error('Fetch Usage Error:', error);
-      res.status(500).json({ success: false, error: error.message });
-    }
-  }
 
   static async startChat(req: AuthenticatedRequest, res: Response) {
     try {

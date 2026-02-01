@@ -61,20 +61,4 @@ class ApiClient {
 
     return jsonDecode(response.body);
   }
-  
-  static Future<int> fetchUsage(String modelId) async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return 0;
-
-    final url = Uri.parse('${AppConstants.apiBaseUrl}/usage/${user.id}/$modelId');
-    final headers = await _getHeaders();
-
-    final response = await http.get(url, headers: headers);
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['usage'] as int;
-    }
-    return 0;
-  }
 }

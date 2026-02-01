@@ -5,16 +5,6 @@ import { getModelLimit } from '../types/models.js';
 import { SearchService } from './SAG/search.service.js';
 export class ChatService {
 
-static async getCurrentUsage(userId: string, modelId: string): Promise<number> {
-    try {
-      const usage = await ChatRepository.getGlobalDailyUsage(userId, modelId);      
-      return usage;
-    } catch (e) {
-      console.error("Error fetching usage in ChatService:", e);
-      return 0;
-    }
-  }
-  
   static async generateSmartTitle(firstMessage: string, apiKey: string, modelId: string): Promise<string> {
     
     if (modelId.includes('gemini')) {
