@@ -10,10 +10,10 @@ final chatdb = Provider((ref) => ChatDB());
 class ActiveChatNotifier extends Notifier<ChatState> {
   bool _hasMore = true;
   bool _isFetchingMore = false;
-  late ChatDB _repository;
+  late ChatDB db;
 
   @override
-  ChatState build() {_repository = ref.watch(chatdb);
+  ChatState build() {db = ref.watch(chatdb);
     return ChatState();
   }
 
@@ -25,19 +25,20 @@ class ActiveChatNotifier extends Notifier<ChatState> {
 
   bool get hasMore => _hasMore;
 
-  Future<void> updateModelUsage(String newModelId) async {
-    state = state.copyWith(
-      lastUsedModel: newModelId,
-      maxLimit: AppConstants.getLimitForModel(newModelId),
-    );
+Future<void> updateModelUsage(String newModelId) async {
+  state = state.copyWith(
+    lastUsedModel: newModelId,
+    maxLimit: AppConstants.getLimitForModel(newModelId),
+  );
+  
+  try {
+    final usage = await db.fetchDailyUsage(newModelId);
     
-    try {
-      final usage = await _repository.fetchDailyUsage(newModelId);
-      state = state.copyWith(currentUsage: usage);
-    } catch (e) {
-      state = state.copyWith(currentUsage: 0);
-    }
+    state = state.copyWith(currentUsage: usage);
+  } catch (e) {
+    state = state.copyWith(currentUsage: 0);
   }
+}
 
   Future<void> loadChat(String chatId, {bool isLoadMore = false}) async {
     if (isLoadMore && (!_hasMore || _isFetchingMore || state.isLoading)) return;
@@ -51,7 +52,7 @@ class ActiveChatNotifier extends Notifier<ChatState> {
 
     try {
       final int limit = isLoadMore ? 5 : 10;
-      final fetchedMessages = await _repository.fetchMessages(
+      final fetchedMessages = await db.fetchMessages(
         chatId: chatId, 
         start: state.messages.length, 
         limit: limit,
@@ -82,13 +83,13 @@ class ActiveChatNotifier extends Notifier<ChatState> {
       String currentChatId = state.chatId ?? '';
 
       if (state.chatId == null) {
-        final startResponse = await _repository.createNewChat(content, modelId, apiKey);
+        final startResponse = await db.createNewChat(content, modelId, apiKey);
         currentChatId = startResponse['data']['id']; 
         state = state.copyWith(chatId: currentChatId);
         ref.read(chatListProvider.notifier).refresh();
       }
 
-      final msgResponse = await _repository.sendToAI(currentChatId, content, modelId, apiKey);
+      final msgResponse = await db.sendToAI(currentChatId, content, modelId, apiKey);
       final data = msgResponse['data'];
 
       if (data == null) throw Exception("Server returned no data");

@@ -1,4 +1,3 @@
-// lib/presentation/screens/chat_interface.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/data/models/chat_state.dart';
@@ -15,19 +14,19 @@ class ChatInterface extends ConsumerStatefulWidget {
 }
 
 class _ChatInterfaceState extends ConsumerState<ChatInterface> {
-  final ScrollController _scrollController = ScrollController();
-  bool _showScrollButton = false;
+  final ScrollController scrollController = ScrollController();
+  bool showScrollButton = false;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients) return;
+    if (!scrollController.hasClients) return;
 
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
       final notifier = ref.read(activeChatProvider.notifier);
       final chatId = ref.read(activeChatProvider).chatId;
       if (chatId != null && notifier.hasMore) {
@@ -35,22 +34,22 @@ class _ChatInterfaceState extends ConsumerState<ChatInterface> {
       }
     }
 
-    if (_scrollController.offset > 300 && !_showScrollButton) {
-      setState(() => _showScrollButton = true);
-    } else if (_scrollController.offset <= 300 && _showScrollButton) {
-      setState(() => _showScrollButton = false);
+    if (scrollController.offset > 300 && !showScrollButton) {
+      setState(() => showScrollButton = true);
+    } else if (scrollController.offset <= 300 && showScrollButton) {
+      setState(() => showScrollButton = false);
     }
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(0.0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+    if (scrollController.hasClients) {
+      scrollController.animateTo(0.0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -70,14 +69,14 @@ class _ChatInterfaceState extends ConsumerState<ChatInterface> {
       children: [
         Column(
           children: [
-            Expanded(child: ChatMessageList(scrollController: _scrollController)),
+            Expanded(child: ChatMessageList(scrollController: scrollController)),
             ChatInputArea(
               selectedModelId: widget.selectedModelId,
               onMessageSent: _scrollToBottom,
             ),
           ],
         ),
-        if (_showScrollButton)
+        if (showScrollButton)
           Positioned(
             bottom: 100, right: 20, 
             child: FloatingActionButton.small(

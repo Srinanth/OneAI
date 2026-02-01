@@ -22,19 +22,11 @@ class ChatDB {
   }
 
   Future<int> fetchDailyUsage(String modelId) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return 0;
-
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final response = await _supabase
-        .from('user_daily_usage')
-        .select('token_count')
-        .eq('user_id', userId)
-        .eq('model_id', modelId)
-        .eq('usage_date', today)
-        .maybeSingle();
-        
-    return response?['token_count'] as int? ?? 0;
+    try {
+      return await ApiClient.fetchUsage(modelId);
+    } catch (e) {
+      return 0;
+    }
   }
 
   Future<List<ChatSession>> fetchChatSessions() async {
