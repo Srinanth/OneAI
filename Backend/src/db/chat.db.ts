@@ -63,13 +63,13 @@ static async saveMessage(chatId: string, userId: string, role: 'user' | 'assista
 
 
   static async getGlobalDailyUsage(userId: string, modelId: string) {
-    const today = new Date().toISOString().split('T')[0];
+    // const today = new Date().toISOString().split('T')[0];
     const { data, error } = await supabase
         .from('user_daily_usage')
         .select('token_count')
         .eq('user_id', userId)
         .eq('model_id', modelId)
-        .eq('usage_date', today)
+        .filter('usage_date', 'eq', 'now()') 
         .maybeSingle();
 
     if (error) throw error;
