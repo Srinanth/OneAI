@@ -101,11 +101,19 @@ Future<void> updateModelUsage(String newModelId) async {
         timestamp: DateTime.now(),
         modelUsed: modelId,
       );
+      // ignore: unused_local_variable
+      int updatedUsage = state.currentUsage;
+      
+      if (data['currentUsage'] != null) {
+        updatedUsage = data['currentUsage'];
+      } else {
+        updatedUsage = await db.fetchDailyUsage(modelId);
+      }
 
       state = state.copyWith(
         messages: [aiMsg, ...state.messages], 
         isLoading: false,
-        currentUsage: data['currentUsage'] ?? state.currentUsage,
+        currentUsage:updatedUsage,
       );
     } catch (e) {
       handleSendError(e, tempId);
