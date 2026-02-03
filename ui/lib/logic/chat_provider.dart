@@ -119,7 +119,7 @@ Future<void> updateModelUsage(String newModelId) async {
       isLoading: false, 
       error: errorMessage,
     );
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 5), () {
       if (state.error == errorMessage) state = state.copyWith(error: null);
     });
   }
