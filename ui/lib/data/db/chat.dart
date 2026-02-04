@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ui/data/models/chat_group.dart';
 import '../models/message.dart';
 import '../models/chat_session.dart';
 import '../services/api_client.dart';
@@ -37,18 +38,25 @@ class ChatDB {
     return response?['token_count'] as int? ?? 0;
   }
 
-  Future<List<ChatSession>> fetchChatSessions() async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) return [];
+  Future<List<ChatSession>> fetchChatSessions({String? groupId}) async {
+  final user = _supabase.auth.currentUser;
+  if (user == null) return [];
 
-    final response = await _supabase
-        .from('chats')
-        .select()
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false);
+  var query = _supabase
+      .from('chats')
+      .select()
+      .eq('user_id', user.id);
 
-    return (response as List).map((json) => ChatSession.fromJson(json)).toList();
+  if (groupId == null) {
+    query = query.isFilter('group_id', null);
+  } else {
+    query = query.eq('group_id', groupId);
   }
+
+  final response = await query.order('updated_at', ascending: false);
+
+  return (response as List).map((json) => ChatSession.fromJson(json)).toList();
+}
 
   Future<void> renameSession(String chatId, String newTitle) async {
     await _supabase
@@ -70,5 +78,40 @@ class ChatDB {
 
   Future<Map<String, dynamic>> sendToAI(String chatId, String content, String modelId, String apiKey) {
     return ApiClient.sendMessage(chatId, content, modelId, apiKey);
+  }
+
+  Future<void> createGroup(String name) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+    
+    await _supabase.from('chat_groups').insert({
+      'user_id': user.id,
+      'name': name,
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<void> deleteGroup(String groupId) async {
+    await _supabase.from('chat_groups').delete().eq('id', groupId);
+  }
+
+  Future<List<ChatGroup>> fetchGroups() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return [];
+
+    final response = await _supabase
+        .from('chat_groups')
+        .select()
+        .eq('user_id', user.id)
+        .order('updated_at', ascending: false);
+
+    return (response as List).map((json) => ChatGroup.fromJson(json)).toList();
+  }
+
+  Future<void> moveChatToGroup(String chatId, String? groupId) async {
+    await _supabase.from('chats').update({
+      'group_id': groupId,
+      'updated_at': DateTime.now().toIso8601String()
+    }).eq('id', chatId);
   }
 }
