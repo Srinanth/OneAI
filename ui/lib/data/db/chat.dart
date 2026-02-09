@@ -53,7 +53,7 @@ class ChatDB {
     query = query.eq('group_id', groupId);
   }
 
-  final response = await query.order('updated_at', ascending: false);
+  final response = await query.order('updated_at', ascending: true);
 
   return (response as List).map((json) => ChatSession.fromJson(json)).toList();
 }
@@ -80,15 +80,16 @@ class ChatDB {
     return ApiClient.sendMessage(chatId, content, modelId, apiKey);
   }
 
-  Future<void> createGroup(String name) async {
+  Future<ChatGroup?> createGroup(String name) async {
     final user = _supabase.auth.currentUser;
-    if (user == null) return;
+    if (user == null) return null;
     
-    await _supabase.from('chat_groups').insert({
+    final response = await _supabase.from('chat_groups').insert({
       'user_id': user.id,
       'name': name,
-      'updated_at': DateTime.now().toIso8601String(),
-    });
+    }).select().single();
+
+    return ChatGroup.fromJson(response);
   }
 
   Future<void> deleteGroup(String groupId) async {

@@ -12,6 +12,7 @@ class ChatListNotifier extends AsyncNotifier<ChatListState> {
 
   @override
   Future<ChatListState> build() async {
+    ref.keepAlive();
     _db = ref.watch(chatDBProvider);
     return _fetchData();
   }
@@ -34,18 +35,45 @@ class ChatListNotifier extends AsyncNotifier<ChatListState> {
   }
 
   Future<void> createGroup(String name) async {
-    await _db.createGroup(name);
-    await refresh();
+    final newGroup = await _db.createGroup(name);
+      if (newGroup != null) {
+      state.whenData((current) {
+        state = AsyncValue.data(current.copyWith(
+          groups: [newGroup, ...current.groups], 
+        ));
+      });
+    }
   }
 
   Future<void> deleteGroup(String groupId) async {
     await _db.deleteGroup(groupId);
-    await refresh(); 
+
+    state.whenData((current) {
+      final updatedGroups = current.groups.where((g) => g.id != groupId).toList();
+      
+      state = AsyncValue.data(current.copyWith(groups: updatedGroups));
+      _fetchData().then((newState) {
+         state = AsyncValue.data(newState);
+      });
+    });
   }
 
   Future<void> moveChat(String chatId, String? groupId) async {
     await _db.moveChatToGroup(chatId, groupId);
-    await refresh(); 
+    state.whenData((current) {
+      
+      if (groupId != null) {
+        final updatedChats = current.chats.where((c) => c.id != chatId).toList();
+        
+        state = AsyncValue.data(current.copyWith(chats: updatedChats));
+      } 
+      
+      else {
+        _fetchData().then((newState) {
+           state = AsyncValue.data(newState);
+        });
+      }
+    });
   }
 
   //  Chat Operations 
