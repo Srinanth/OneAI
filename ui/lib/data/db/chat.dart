@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ui/data/models/chat_group.dart';
+import 'package:ui/data/models/search.dart';
 import '../models/message.dart';
 import '../models/chat_session.dart';
 import '../services/api_client.dart';
@@ -114,5 +115,18 @@ class ChatDB {
       'group_id': groupId,
       'updated_at': DateTime.now().toIso8601String()
     }).eq('id', chatId);
+  }
+  
+  Future<List<SearchResult>> searchMessages(String query, {String? chatId}) async {
+    if (query.trim().isEmpty) return [];
+
+    final params = {
+      'search_query': query,
+      'target_chat_id': chatId,
+    };
+
+    final response = await _supabase.rpc('search_messages', params: params);
+
+    return (response as List).map((json) => SearchResult.fromJson(json)).toList();
   }
 }

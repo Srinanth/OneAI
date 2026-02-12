@@ -31,16 +31,15 @@ class ChatMessageList extends ConsumerWidget {
 
         final messageIndex = isLoading ? index - 1 : index;
 
-        if (messageIndex == messages.length && hasMore) {
-          return const Padding(
+        if (messageIndex >= messages.length) {
+           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           );
         }
 
-        if (messageIndex < 0 || messageIndex >= messages.length) return const SizedBox.shrink();
-
         final message = messages[messageIndex];
+         
         return RepaintBoundary(
           child: MessageBubble(
             content: message.content,

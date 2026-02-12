@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../logic/chat_list_provider.dart';
 import '../../logic/chat_provider.dart';
 import '../../logic/auth_provider.dart';
+import '../../data/services/search.dart';
 import './group_widgets/drawer_dialogs.dart';
 import './group_widgets/group_tile.dart';
 import './group_widgets/chat_tile.dart';
@@ -19,7 +20,7 @@ class ChatDrawer extends ConsumerWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         children: [
-          _buildNewChatHeader(context, ref, colorScheme),
+          _buildHeader(context, ref, colorScheme),
           Divider(height: 1, color: Colors.grey.withValues(alpha: 0.5)),
 
           Expanded(
@@ -61,26 +62,59 @@ class ChatDrawer extends ConsumerWidget {
     );
   }
 
-  Widget _buildNewChatHeader(BuildContext context, WidgetRef ref, ColorScheme colorScheme) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, ColorScheme colorScheme) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: SizedBox(
-          height: 50,
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(activeChatProvider.notifier).clear();
-            },
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
-            style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 45,
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ref.read(activeChatProvider.notifier).clear();
+                },
+                icon: const Icon(Icons.add, size: 20),
+                label: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                showSearch(
+                  context: context, 
+                  delegate: ChatSearchDelegate() 
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: 40,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, size: 20, color: colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Search history...", 
+                      style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
