@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants.dart';
+import 'token_badge.dart';
 
 class ModelSelector extends StatelessWidget {
   final String currentProvider;
@@ -13,42 +14,50 @@ class ModelSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: currentProvider,
-          icon: const Icon(Icons.arrow_drop_down, size: 20),
-          isDense: true,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
-            fontSize: 13,
+    return TokenBorder(
+      radius: 20,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+            width: 1,
           ),
-          items: AppConstants.supportedModels.map((provider) {
-            return DropdownMenuItem<String>(
-              value: provider,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _getIcon(provider),
-                    size: 16,
-                    color: _getColor(provider),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(provider),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) onProviderChanged(value);
-          },
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: currentProvider,
+            icon: Icon(Icons.arrow_drop_down, size: 20, color: Theme.of(context).colorScheme.primary),
+            isDense: true,
+            dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+            items: AppConstants.supportedModels.map((provider) {
+              return DropdownMenuItem<String>(
+                value: provider,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _getIcon(provider),
+                      size: 16,
+                      color: _getColor(provider),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(provider),
+                  ],
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) onProviderChanged(value);
+            },
+          ),
         ),
       ),
     );
