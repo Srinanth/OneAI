@@ -19,6 +19,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@google/genai": "^1.38.0",
     "@langchain/textsplitters": "^1.0.1",
     "@supabase/supabase-js": "^2.90.1",
