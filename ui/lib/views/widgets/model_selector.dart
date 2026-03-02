@@ -18,6 +18,10 @@ class ModelSelector extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final theme = Theme.of(context);
 
+    final safeProvider = AppConstants.supportedModels.contains(currentProvider) 
+        ? currentProvider 
+        : AppConstants.supportedModels.first;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
@@ -28,25 +32,31 @@ class ModelSelector extends ConsumerWidget {
           width: 1,
         ),
       ),
+      constraints: const BoxConstraints(maxWidth: 200), 
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: currentProvider,
+          value: safeProvider,
           icon: Icon(Icons.arrow_drop_down, size: 20, color: theme.colorScheme.primary),
           isDense: true,
+          isExpanded: true,
           dropdownColor: theme.colorScheme.surfaceContainer,
-          // Custom selected item builder to keep the "closed" view compact
+          
           selectedItemBuilder: (context) {
             return AppConstants.supportedModels.map((provider) {
               return Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(_getIcon(provider), size: 18, color: _getColor(provider)),
                   const SizedBox(width: 8),
-                  Text(
-                    provider,
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                  Flexible(
+                    child: Text(
+                      provider,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -54,7 +64,6 @@ class ModelSelector extends ConsumerWidget {
             }).toList();
           },
           items: AppConstants.supportedModels.map((provider) {
-            // Get the actual model ID mapped to this provider slot
             final specificModel = _getMappedModel(provider, settings);
             final cleanModelName = specificModel.split('/').last; 
 
@@ -69,22 +78,29 @@ class ModelSelector extends ConsumerWidget {
                     color: _getColor(provider),
                   ),
                   const SizedBox(width: 12),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        provider,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                      ),
-                      Text(
-                        cleanModelName,
-                        style: TextStyle(
-                          fontSize: 10, 
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5)
+                  Flexible(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          provider,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                      ),
-                    ],
+                        Text(
+                          cleanModelName,
+                          style: TextStyle(
+                            fontSize: 10, 
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5)
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -100,13 +116,12 @@ class ModelSelector extends ConsumerWidget {
 
   String _getMappedModel(String provider, SettingsState settings) {
     switch (provider) {
-      case 'DeepSeek':
-        return settings.selectedDeepSeek;
-      case 'ChatGPT':
-        return settings.selectedOpenRouter;
+      case 'DeepSeek': return settings.selectedDeepSeek;
+      case 'ChatGPT': return settings.selectedOpenRouter;
+      case 'Claude': return settings.selectedClaude;
+      case 'Grok': return settings.selectedGrok;
       case 'Gemini':
-      default:
-        return settings.selectedGemini;
+      default: return settings.selectedGemini;
     }
   }
 
@@ -115,6 +130,8 @@ class ModelSelector extends ConsumerWidget {
       case 'Gemini': return Icons.auto_awesome;
       case 'DeepSeek': return Icons.psychology;
       case 'ChatGPT': return Icons.bolt;
+      case 'Claude': return Icons.memory;
+      case 'Grok': return Icons.rocket_launch;
       default: return Icons.chat_bubble_outline;
     }
   }
@@ -124,6 +141,8 @@ class ModelSelector extends ConsumerWidget {
       case 'Gemini': return Colors.blue;
       case 'DeepSeek': return Colors.purple;
       case 'ChatGPT': return Colors.orange;
+      case 'Claude': return Colors.teal;
+      case 'Grok': return Colors.blueGrey;
       default: return Colors.grey;
     }
   }
