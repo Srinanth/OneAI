@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/data/models/chat_state.dart';
 import 'package:ui/logic/settings_provider.dart';
+import 'package:ui/views/widgets/token_badge.dart';
 import '../../logic/chat_provider.dart';
 import '../../core/constants.dart';
 import '../widgets/model_selector.dart';
@@ -57,7 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
       
-    return Scaffold(
+   return Scaffold(
       drawer: const ChatDrawer(),
       appBar: AppBar(
         title: ModelSelector(
@@ -71,6 +72,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         centerTitle: true,
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 14.0,
+              right: 0.0,
+            ),
+            child: const TokenBadge(),
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => Navigator.push(

@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ui/logic/chat_provider.dart';
+import '../../logic/chat_provider.dart';
 
-class TokenBorder extends ConsumerWidget {
-  final Widget child;
-  final double radius;
-  final double strokeWidth;
-
-  const TokenBorder({
-    super.key,
-    required this.child,
-    this.radius = 20.0,
-    this.strokeWidth = 2.5,
-  });
+class TokenBadge extends ConsumerWidget {
+  const TokenBadge({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,62 +21,35 @@ class TokenBorder extends ConsumerWidget {
 
     return Tooltip(
       message: "$currentUsage / $maxLimit tokens used",
-      triggerMode: TooltipTriggerMode.longPress,
-      child: CustomPaint(
-        foregroundPainter: _BorderProgressPainter(
-          progress: progress,
-          color: statusColor,
-          strokeWidth: strokeWidth,
-          radius: radius,
-        ),
-        child: child,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 6,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: progress,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "${(progress * 100).toInt()}% Used",
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: statusColor),
+          ),
+        ],
       ),
     );
-  }
-}
-
-class _BorderProgressPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  final double strokeWidth;
-  final double radius;
-
-  _BorderProgressPainter({
-    required this.progress,
-    required this.color,
-    required this.strokeWidth,
-    required this.radius,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress <= 0) return;
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(radius),
-    );
-    
-    final path = Path()..addRRect(rrect);
-
-    final metrics = path.computeMetrics().first;
-    final extractPath = metrics.extractPath(
-      0.0, 
-      metrics.length * progress,
-      startWithMoveTo: true,
-    );
-
-    canvas.drawPath(extractPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _BorderProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
