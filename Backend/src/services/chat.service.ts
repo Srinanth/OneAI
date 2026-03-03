@@ -117,7 +117,7 @@ export class ChatService {
 
       const history = await ChatRepository.getHistory(chatId, userId);
       const chatData = await ChatRepository.getChat(chatId, userId); 
-      const adapter = AIFactory.createAdapter(modelId);
+      const adapter = AIFactory.createAdapter(modelId, apiKey);
       
       const historyWithRAG = [...history];
       if (context && historyWithRAG.length > 0) {
