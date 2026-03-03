@@ -7,36 +7,35 @@ import { GrokAdapter } from "./adapter/grok.adapter.js";
 import { ClaudeAdapter } from "./adapter/claude.adapter.js";
 
 export class AIFactory {
-  /**
-   * Returns the correct adapter based on the model ID.
-   * @param modelId
-   */
-  static createAdapter(modelId: string): AIModelAdapter {
+ 
+  static createAdapter(modelId: string, apiKey: string): AIModelAdapter {
     
-    if (modelId.includes("/")) {
+    if (apiKey.startsWith("sk-or-v1")) {
       return new OpenRouterAdapter(modelId);
     }
 
-    if (modelId.startsWith("gemini")) {
-      return new GeminiAdapter(modelId);
+    const cleanModelId = modelId.split('/').pop() || modelId;
+
+    if (cleanModelId.startsWith("gemini")) {
+      return new GeminiAdapter(cleanModelId);
     }
 
-    if (modelId.startsWith("gpt") || modelId.startsWith("o1") || modelId.startsWith("o3")) {
-      return new GPTAdapter(modelId);
+    if (cleanModelId.startsWith("gpt") || cleanModelId.startsWith("o1") || cleanModelId.startsWith("o3")) {
+      return new GPTAdapter(cleanModelId);
     }
 
-    if (modelId.startsWith("deepseek")) {
-      return new DeepSeekAdapter(modelId);
+    if (cleanModelId.startsWith("deepseek")) {
+      return new DeepSeekAdapter(cleanModelId);
     }
 
-    if (modelId.startsWith("grok")) {
-      return new GrokAdapter(modelId);
+    if (cleanModelId.startsWith("grok")) {
+      return new GrokAdapter(cleanModelId);
     }
 
-    if (modelId.startsWith("claude")) {
-      return new ClaudeAdapter(modelId);
+    if (cleanModelId.startsWith("claude")) {
+      return new ClaudeAdapter(cleanModelId);
     }
     
-    throw new Error(`Model ID '${modelId}' is not supported yet.`);
+    throw new Error(`Model ID '${modelId}' (Cleaned: '${cleanModelId}') is not supported yet.`);
   }
 }
