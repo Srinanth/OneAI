@@ -2,7 +2,7 @@
 
 # **OneAI**
 
-### Gemini, Claude, ChatGPT, DeepSeek, and Grok — unified in one interface.
+### Gemini, Claude, ChatGPT, DeepSeek, and Grok. All under one roof.
 
 ![Frontend](https://img.shields.io/badge/Frontend-Flutter-blue?style=for-the-badge&logo=flutter)
 ![Backend](https://img.shields.io/badge/Backend-Node.js-green?style=for-the-badge&logo=node.js)
