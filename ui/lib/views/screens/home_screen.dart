@@ -72,12 +72,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         centerTitle: true,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(
+          const Padding(
+            padding: EdgeInsets.only(
               top: 14.0,
               right: 0.0,
             ),
-            child: const TokenBadge(),
+            child: TokenBadge(),
           ),
           IconButton(
             icon: const Icon(Icons.settings),
@@ -98,6 +98,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return settings.selectedDeepSeek;
       case 'ChatGPT':
         return settings.selectedOpenRouter;
+      case 'Claude':
+        return settings.selectedClaude;
+      case 'Grok':
+        return settings.selectedGrok;
       case 'Gemini':
       default: 
         return settings.selectedGemini;

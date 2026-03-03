@@ -42,13 +42,11 @@ class StorageService {
 
   // Claude
   String? getClaudeKey() => prefs.getString(claudeKey);
-  String getClaudeModel() => prefs.getString(claudeModel) ?? 'anthropic/claude-3-haiku';
+  String getClaudeModel() => prefs.getString(claudeModel) ?? 'anthropic/claude-3-5-haiku';
 
   // Grok
   String? getGrokKey() => prefs.getString(grokKey);
   String getGrokModel() => prefs.getString(grokModel) ?? 'xai/grok-beta';
-
-
 
   Future<void> setKeys({
     String? gemini, 

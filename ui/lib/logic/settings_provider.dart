@@ -29,7 +29,7 @@ class SettingsState {
     this.openRouterKey = '',
     this.selectedOpenRouter = 'openai/gpt-4o',
     this.claudeKey = '',
-    this.selectedClaude = 'anthropic/claude-3-haiku',
+    this.selectedClaude = 'anthropic/claude-3-5-haiku',
     this.grokKey = '',
     this.selectedGrok = 'xai/grok-beta',
   });
