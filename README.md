@@ -1,21 +1,17 @@
-::: {align="center"}
+<div align="center">
+
 # **OneAI**
 
-### Gemini, Claude, ChatGPT, DeepSeek, and Grok. All under one roof.
+### Gemini, Claude, ChatGPT, DeepSeek, and Grok — unified in one interface.
 
-```{=html}
-<p>
-```
-`<img src="https://img.shields.io/badge/Frontend-Flutter-blue?style=for-the-badge&logo=flutter" />`{=html}
-`<img src="https://img.shields.io/badge/Backend-Node.js-green?style=for-the-badge&logo=node.js" />`{=html}
-`<img src="https://img.shields.io/badge/Database-Supabase-3ECF8E?style=for-the-badge&logo=supabase" />`{=html}
-`<img src="https://img.shields.io/badge/Language-TypeScript-3178C6?style=for-the-badge&logo=typescript" />`{=html}
-`<img src="https://img.shields.io/badge/AI-Multi--Model-purple?style=for-the-badge" />`{=html}
-`<img src="https://img.shields.io/badge/Architecture-RAG-orange?style=for-the-badge" />`{=html}
-```{=html}
-</p>
-```
-:::
+![Frontend](https://img.shields.io/badge/Frontend-Flutter-blue?style=for-the-badge&logo=flutter)
+![Backend](https://img.shields.io/badge/Backend-Node.js-green?style=for-the-badge&logo=node.js)
+![Database](https://img.shields.io/badge/Database-Supabase-3ECF8E?style=for-the-badge&logo=supabase)
+![Language](https://img.shields.io/badge/Language-TypeScript-3178C6?style=for-the-badge&logo=typescript)
+![AI](https://img.shields.io/badge/AI-Multi--Model-purple?style=for-the-badge)
+![Architecture](https://img.shields.io/badge/Architecture-RAG-orange?style=for-the-badge)
+
+</div>
 
 ------------------------------------------------------------------------
 
