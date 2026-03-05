@@ -67,6 +67,15 @@ format.
 
 ------------------------------------------------------------------------
 
+### 🎨 Interactive AI Artifacts
+
+OneAI goes beyond standard chat interfaces by supporting **Artifacts**—dedicated, stateful workspaces for code, documents, and structured data.
+-   **Stateful Execution:** The backend continuously tracks the `current_artifact` state within the database for each specific chat session.
+-   **Iterative Refinement:** Models can read the existing artifact state and iteratively update, patch, or rewrite code blocks without losing context.
+-   **Cross-Model Handoff:** Because artifact state is persisted at the database level per chat, you can generate a codebase with DeepSeek, seamlessly switch to Claude 3.5 Sonnet, and ask it to refactor the exact same artifact.
+
+------------------------------------------------------------------------
+
 ## 🌐 Autonomous Web RAG Pipeline
 
 When temporal or real-time intent is detected, OneAI activates a custom
