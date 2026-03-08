@@ -194,4 +194,4 @@ control system.
 
 ## 📄 License
 
-Personal portfolio project. Not intended for commercial redistribution.
+Fun personal project. Not intended for commercial redistribution.
