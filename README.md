@@ -35,6 +35,15 @@ pipelines, secure key handling, and vector search infrastructure.
 
 ------------------------------------------------------------------------
 
+## 📸 App Screenshots
+![Main Dashboard](screenshots/photo_6154565183599218158_y.jpg)
+![Chat Interface](screenshots/photo_6154565183599218160_y.jpg)
+![SideBar](screenshots/photo_6154565183599218161_y.jpg)
+![RAG](screenshots/photo_6154565183599218159_y.jpg)
+![Settings](screenshots/photo_6154565183599218162_y.jpg)
+
+------------------------------------------------------------------------
+
 ## 🧠 Core Capabilities
 
 ### 🔹 Universal Multi-Model Access
