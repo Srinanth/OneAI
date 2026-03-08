@@ -168,7 +168,7 @@ OneAI is intentionally **not** a public SaaS product.
 It is built as:
 
 -   A personal AI engineering lab
--   A system design portfolio project
+-   A project to learn system design
 -   A daily-driver AI orchestration workspace
 
 The absence of authentication layers and RLS is deliberate to maintain
