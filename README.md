@@ -36,11 +36,13 @@ pipelines, secure key handling, and vector search infrastructure.
 ------------------------------------------------------------------------
 
 ## 📸 App Screenshots
-![Main Dashboard](screenshots/photo_6154565183599218158_y.jpg)
-![Chat Interface](screenshots/photo_6154565183599218160_y.jpg)
-![SideBar](screenshots/photo_6154565183599218161_y.jpg)
-![RAG](screenshots/photo_6154565183599218159_y.jpg)
-![Settings](screenshots/photo_6154565183599218162_y.jpg)
+<p align="center">
+<img src="screenshots/photo_6154565183599218158_y.jpg" width="300" alt="Main Dashboard" />
+<img src="screenshots/photo_6154565183599218160_y.jpg" width="300" alt="Chat Interface" />
+<img src="screenshots/photo_6154565183599218161_y.jpg" width="300" alt="SideBar" />
+<img src="screenshots/photo_6154565183599218159_y.jpg" width="300" alt="RAG" />
+<img src="screenshots/photo_6154565183599218162_y.jpg" width="300" alt="Settings" />
+</p>
 
 ------------------------------------------------------------------------
 
